@@ -602,7 +602,9 @@ class WanModel(nn.Module):
                 if block.use_audio:
                     block.audio_cross_attn_wrapper.audio_cross_attn.forward = types.MethodType(ulysses_audio_cross_attn_forward, block.audio_cross_attn_wrapper.audio_cross_attn)
             self.forward = types.MethodType(ulysses_dit_forward, self)
-        
+        else:
+            print(f"Unified parallel not initialized, not using ulysses_dit_forward")
+
     def forward(
         self,
         x,
