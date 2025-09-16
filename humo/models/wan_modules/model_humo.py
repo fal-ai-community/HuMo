@@ -495,7 +495,9 @@ class WanModel(nn.Module):
                  cross_attn_norm=True,
                  eps=1e-6,
                  audio_token_num=16,
-                 insert_audio=True):
+                 insert_audio=True,
+                 use_ulysses=None,
+                ):
         r"""
         Initialize the diffusion model backbone.
 
@@ -594,7 +596,9 @@ class WanModel(nn.Module):
         self.init_weights()
 
         # initialize unified parallel
-        if is_unified_parallel_initialized():
+        if use_ulysses is None:
+            use_ulysses = is_unified_parallel_initialized()
+        if use_ulysses:
             print(f"Initializing WanModel with unified parallel initialized")
             from humo.models.distributed.dit_ulysses_sequence_parallel import ulysses_attn_forward, ulysses_dit_forward, ulysses_audio_cross_attn_forward
             for block in self.blocks:
