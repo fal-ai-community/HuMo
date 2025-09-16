@@ -6,7 +6,7 @@ from models.audio.audio_proj import AudioProjModel
 
 import torch.cuda.amp as amp
 import math
-from humo.models.wan_modules.attention import flash_attention
+from humo.models.wan_modules.attention import attention
 from common.distributed.advanced import is_unified_parallel_initialized
 
 import types
@@ -142,7 +142,7 @@ class WanSelfAttention(nn.Module):
 
         q, k, v = qkv_fn(x)
 
-        x = flash_attention(
+        x = attention(
             q=rope_apply(q, grid_sizes, freqs),
             k=rope_apply(k, grid_sizes, freqs),
             v=v,
@@ -200,7 +200,7 @@ class WanSelfAttentionSepKVDim(nn.Module):
 
         q, k, v = qkv_fn(x)
 
-        x = flash_attention(
+        x = attention(
             q=rope_apply(q, grid_sizes, freqs),
             k=rope_apply(k, grid_sizes, freqs),
             v=v,
@@ -231,7 +231,7 @@ class WanT2VCrossAttention(WanSelfAttention):
         v = self.v(context).view(b, -1, n, d)
 
         # compute attention
-        x = flash_attention(q, k, v, k_lens=context_lens)
+        x = attention(q, k, v, k_lens=context_lens)
 
         # output
         x = x.flatten(2)
@@ -266,7 +266,7 @@ class WanT2VCrossAttentionGather(WanSelfAttentionSepKVDim):
         v = v.reshape(-1, 16, n, d)
 
         # Cross-attention
-        x = flash_attention(q, k, v, k_lens=None)  # No masking for audio
+        x = attention(q, k, v, k_lens=None)  # No masking for audio
         
         x = x.view(b, -1, n, d).flatten(2)
         x = self.o(x)
@@ -311,7 +311,7 @@ class WanI2VCrossAttention(WanSelfAttention):
         q = self.norm_q(self.q(x)).view(b, -1, n, d)
         k = self.norm_k(self.k(context)).view(b, -1, n, d)
         v = self.v(context).view(b, -1, n, d)
-        x = flash_attention(q, k, v, k_lens=context_lens)
+        x = attention(q, k, v, k_lens=context_lens)
         
         # output
         x = x.flatten(2)
