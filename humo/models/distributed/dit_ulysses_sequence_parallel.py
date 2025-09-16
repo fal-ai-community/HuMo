@@ -25,7 +25,7 @@ from common.distributed.advanced import (
     gather_heads_scatter_seq,
     unpad_tensor
 )
-from humo.models.wan_modules.attention import flash_attention
+from humo.models.wan_modules.attention import attention
 from humo.models.wan_modules.model_humo import rope_apply, sinusoidal_embedding_1d
 
 
@@ -187,7 +187,7 @@ def ulysses_attn_forward(
     q = rope_apply(q, grid_sizes, freqs)
     k = rope_apply(k, grid_sizes, freqs)
 
-    x = flash_attention(
+    x = attention(
         q=half(q),
         k=half(k),
         v=half(v),
@@ -253,7 +253,7 @@ def ulysses_audio_cross_attn_forward(
     k = k.reshape(-1, 16, pad_split_n, d)
     v = v.reshape(-1, 16, pad_split_n, d)
 
-    x = flash_attention(
+    x = attention(
         q=q,
         k=k,
         v=v,
